@@ -176,8 +176,17 @@ sealed trait Catenable[+A] {
     case Empty => 0
   }
 
-  final def toList: List[A] =
-    uncons map { case (hd, tail) => hd :: tail.toList } getOrElse Nil
+  final def toList: List[A] = {
+    @tailrec
+    def unconsLoop(self: Catenable[A], results: List[A]): List[A] = {
+      self.uncons match {
+        case Some((hd, tail)) =>
+          unconsLoop(tail, hd :: results)
+        case None => results.reverse
+      }
+    }
+    unconsLoop(this, Nil)
+  }
 }
 
 object Catenable {
